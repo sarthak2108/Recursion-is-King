@@ -1,0 +1,139 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%tartan(N) prints the tartan pattern of dimension N.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+tartan(N):-
+	I is N,
+	J is N,
+	row(I,J,N-1,[]).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%row(I,J,N,X), I represents the the dimension of the
+%%square being drawn, J the row currently being drawn, N
+%%the ultimate dimension of the tartan pattern, and X, the
+%%list of all positions in a row through which a square
+%%passes.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Terminating rules for row/4.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+row(0,0,N,X):-
+	I1 is 2*N+1,
+	print(I1,X).
+row(0,J,N,X):-
+	I1 is 2*N+1,
+	print(I1,X),
+	J1 is J-1,
+	I2 is N+1,
+	row(I2,J1,N,[]),
+	print(I1,X).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%row/4 rules for handling general values of I and J.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+row(I,J,N,X):-
+	I>0,
+	J1 is J+1,
+	I<J1,
+	I1 is I-1,
+	row(I1,J,N,X).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%row/4 rules for handling even I>0. Only the sides parallel
+%%to the X axis are drawn.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+row(I,J,N,X):-
+	I>0,
+	I1 is mod(I,2),
+	I1 is 0,
+	J1 is J+1,
+	I is J1,
+	C is I,
+	setall(C,I,J,N,X).
+row(I,J,N,X):-
+	I>0,
+	I1 is mod(I,2),
+	I1 is 0,
+	J1 is J+1,
+	I>J1,
+	I2 is I-1,
+	row(I2,J,N,X).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%row/4 rules for handling odd I>0. Only the sides parallel
+%%to the Y axis are drawn.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+row(I,J,N,X):-
+	I>0,
+	I1 is mod(I,2),
+	I1 is 1,
+	J1 is J+1,
+	I>=J1,
+	I2 is N+1-I+1,
+	append(X,[I2],X1),
+	I3 is N+1+I-1,
+	append(X1,[I3],X2),
+	I4 is I-1,
+	row(I4,J,N,X2).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%setall/5 sets a range of positions in a row active. It
+%%takes the same arguments as row/4 and an additional count.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
+
+setall(0,I,J,N,X):-
+	I1 is I-1,
+	row(I1,J,N,X).
+setall(C,I,J,N,X):-
+	C>0,
+	C1 is N+1-C+1,
+	append(X,[C1],X1),
+	C2 is N+1+C-1,
+	append(X1,[C2],X2),
+	C3 is C-1,
+	setall(C3,I,J,N,X2).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Helper predicates.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%print/2 prints a row corresponding to the contents of the
+%%list passed to it by row/4.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+print(0,_):-nl.
+print(I,X):-
+	I>0,
+	member(I,X),
+	write('*'),
+	I1 is I-1,
+	print(I1,X).
+print(I,X):-
+	I>0,
+	write(' '),
+	I1 is I-1,
+	print(I1,X).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%append/3 appends two lists passed as the first 2 arguments
+%%into a another list specified by the 3rd argument. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+append([],L,L).
+append([H|T],L2,[H|R]):-
+	append(T,L2,R).
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%member/2 determines whether an element is a member of the
+%%specified list
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+member(A,[A|_]).
+member(A,[_|T]):-
+	member(A,T).

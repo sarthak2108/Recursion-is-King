@@ -1,0 +1,104 @@
+:-import append/3, member/2 from basics.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% propositions/2 takes a program P and
+% return the lisy of propositions in P.
+%
+% tp/3 computes the immediate consequence
+% of a program P in M2 given a model M1.
+%
+% leastmodel/2 takes a program P and returns
+% the least Herbrand model M of P.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+propositions(P,L):-
+	propositionsHelper(P,[],L).
+
+tp(P,M1,M2):-
+	tpHelper(P,M1,M1,M2).
+
+leastmodel(P,M):-
+	leastmodelHelper(P,[],M).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Helper predicates.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% propositionsHelper/3 returns a sorted
+% list of the propositional symbols in
+% the program using the built-in predicate
+% sort/2.
+% 
+% Given a rule of the form rule(X,Y),
+% tpHelper/4 determines if the body Y
+% constitutes a subset of the given model
+% and accordingly adds the corresponding
+% head X to the immediate consequence. It
+% uses sort/2 to create the final immediate
+% consequence. This is done to make the subset
+% comparison in leastmodelHelper/3 take constant
+% time.
+%
+% leastmodelHelper/3 uses tp/3 to incrementally
+% construct the least model starting from
+% {}, the empty model. If two models generated
+% in consecutive steps are identical then
+% it terminates. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+propositionsHelper([rule(X,Y)|T],L1,L):-
+	append([X],Y,L2),
+	append(L1,L2,L3),
+	propositionsHelper(T,L3,L).
+propositionsHelper([],L1,L):-
+	purge(L1,[],L2),
+	sort(L2,L).
+
+tpHelper([rule(X,Y)|T],M1,M2,M3):-
+	subset(Y,M1),
+	append(M2,[X],M4),
+	tpHelper(T,M1,M4,M3).
+tpHelper([rule(_,Y)|T],M1,M2,M3):-
+	\+ subset(Y,M1),
+	tpHelper(T,M1,M2,M3).
+tpHelper([],_,M2,M3):-
+	purge(M2,[],M4),
+	sort(M4,M3).
+
+leastmodelHelper(P,M1,M):-
+	tp(P,M1,M2),
+	(M1 \= M2
+	->
+		leastmodelHelper(P,M2,M)
+	;
+		M = M2).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% subset/2 determines if a set is a
+% subset of another. It is used by tpHelper/4.
+%
+% purge/3 removes duplicates from a list.
+% It is used by propositionsHelper/3 and
+% tpHelper/4.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+subset([H|T],L):-
+	member(H,L),
+	subset(T,L).
+subset([H|_],L):-
+	\+ member(H,L),
+	!,
+	fail.
+subset([],_).
+
+purge([], L, L).		
+purge([H|T], T1, L):-
+	\+ member(H, T1),
+	append(T1, [H], T2),
+	purge(T, T2, L).
+purge([H|T], T1, L):-
+	member(H, T1),
+	purge(T, T1, L).

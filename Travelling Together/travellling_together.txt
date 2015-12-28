@@ -1,0 +1,35 @@
+########################################
+########################################
+########## TRAVELLING TOGETHER #########
+########################################
+########################################
+############ XSB Version 3.6 ###########
+########################################
+########################################
+
+Travelling together:
+
+Friends like to travel together, or at least spend time together during their journeys when they happen to stay overnight in the same town. To make that happen takes quite some planning, as the starting points of their journeys can be different, and so can their destinations, and even the lengths of their journeys. Lucky enough, they start their journeys all on the same day. Everyone involved travels according to following rules:
+- a one-day leg of a journey starts in a town and ends in another one: but not every town is in a one day trip reach from every other town - you will be told what is possible
+- the whole journey (from start to destination) must be completed in the smallest possible number of days
+
+For each friend, those rules can still leave some choice, as different routes from starting point to destination might need the same minimal number of days. So the friends use that choice to optimize the total pleasure they get from their journeys: a joint day trip travelling together from one town to another gives pleasure. It is also possible that they meet (in the evening) in a town, and then they spend the night together: that gives pleasure as well, but not as much as travelling together. They can also meet on a road (travelling in opposite directions), but that is worthless, as the only thing they can do is wave at each other as they pass by.
+
+We could now give you enough facts so that you can compute the journeys each traveler could make, but it is boring to write your nth all-shortest-paths program, so instead, you get for each traveler their possible journeys. E.g. the list 
+
+[journey(bozo,[heverlee, bertem, tervuren]),
+ journey(bozo,[heverlee, korbeekdijle, tervuren]),
+ journey(dork,[hammemille, korbeekdijle, tervuren, sterrebeek]),
+ journey(dork,[hammemille, overijse, tervuren, sterrebeek])]
+
+represents the fact that bozo can travel in 2 legs from heverlee to tervuren according either of the two plans, while dork can travel from hammemille to sterrebeek in 3 legs. Such a list is the first argument of the predicate maximalpleasure/4 you must write. The other arguments will become clear in the example below.
+
+Write a predicate that can be called as for instance
+
+?- maximalpleasure([journey(bozo,[heverlee, bertem, tervuren]),
+journey(bozo,[heverlee, korbeekdijle, tervuren]),
+journey(dork,[hammemille, korbeekdijle, tervuren, sterrebeek]),
+journey(dork,[hammemille, overijse, tervuren, sterrebeek])],
+10,3,P).
+
+that returns in P the maximal pleasure they can get out of the journey. 10 is the pleasure derived from travelling together one leg of the journey. 3 is the pleasure derived from meeting in town. Don't forget that when people travel together (or meet), each of them gets that same pleasure, and it all adds up! So for the example above, the maximal pleasure is 32: they travel together from korbeekdijle to tervuren (totalling 20), and they spend 2 nights together (one in korbeekdijle and one in tervuren, totalling 12).

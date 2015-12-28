@@ -1,0 +1,193 @@
+%%%%%%%%%%%% DECLARATION %%%%%%%%%%%%
+% This code relies heavily on the 
+% bounds package. If this gives a 
+% syntax error, please explicitly compile
+% bounds. Although this code has the import
+% directive for bounds, I have faced trouble
+% running the code due to the bounds package.
+% This may be a glitch of XSB Version 3.6
+% or a result of my installation being
+% corrupt.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:-import append/3 from basics.
+:-import in/2, all_different/1, label/1 from bounds.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% solve/1 takes the input file as an argument,
+% which is specified as a string.
+%
+% read_file/2 reads 36 white space separated
+% characters from the input file specified
+% in hw3/1 and stores it as a list of lists.
+%  
+% sudoku/1 is the solves the list of lists
+% created by read_file/2.
+%
+% print_all/2 prints all the solutions
+% found by sudoku/1. It takes a second argument
+% for better presentation of the output.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+solve(X):-
+	read_file(X,L),
+	findall(L,sudoku(L),Ls),
+	print_all(Ls,1).
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% We utilize XSB's C-like file I/O
+% support using the open/3 predicate.
+%
+% read_char/5 is a helper predicate
+% which reads non-white-space characters
+% from the file as their unicode values
+% and creates a list of lists. The
+% reasoning behind reading unicode values
+% instead of the characters themselves
+% will become clear when we examine sudoku/1.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+read_file(X,L):-
+	open(X,read,S),
+	read_char(S,6,[],[],L).
+
+read_char(S,Co,L1,L2,L3):-
+	get_code(S,Ch),
+	Ch\= -1,
+	((Ch\=9,Ch\=32,Ch\=10,Ch\=13,Ch\=45,Co\=0)
+	->
+		Co1 is Co-1,
+		Ch1 is Ch-48,
+		append(L1,[Ch1],L4),
+		read_char(S,Co1,L4,L2,L3)
+	;(Ch=45)
+	->
+		Co1 is Co-1,
+		append(L1,[_],L4),
+		read_char(S,Co1,L4,L2,L3)
+	;(Co=0)
+	->
+		append(L2,[L1],L4),
+		read_char(S,6,[],L4,L3)
+	;
+		read_char(S,Co,L1,L2,L3)).
+read_char(S,_,L1,L2,L3):-
+	append(L2,[L1],L4),
+	L3=L4,
+	close(S).
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This portion relies heavily on the 
+% bounds package.
+%
+% We read the characters as their unicode
+% values to make use of the in/2 constraint
+% predicate in the bounds package.
+%
+% all_different/1, again from the bounds
+% package, checks whether all elements
+% in a row, a column, or a box are different.
+% We utilize Prolog's inherent backtracking,
+% which finds proper assignments for each
+% variable in the given range.
+%
+% label/1 succeeds if it manages
+% to assign to each variable a value.
+% This is required as all_different returns
+% all possible values for a board position
+% which makes the output unreadable.
+% Basically, label/1 does the backtracking
+% and outputs all available solutions.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+
+sudoku([[X11,X12,X13,X14,X15,X16],
+	[X21,X22,X23,X24,X25,X26],
+ 	[X31,X32,X33,X34,X35,X36],
+	[X41,X42,X43,X44,X45,X46],
+	[X51,X52,X53,X54,X55,X56],
+	[X61,X62,X63,X64,X65,X66]]):-
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Assign each 36 positions a range of
+	% values from 1 to 6.
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	[X11,X12,X13,X14,X15,X16,
+	X21,X22,X23,X24,X25,X26,
+	X31,X32,X33,X34,X35,X36,
+	X41,X42,X43,X44,X45,X46,
+	X51,X52,X53,X54,X55,X56,
+	X61,X62,X63,X64,X65,X66] in 1..6,
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Check if the 6 rows are valid.
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	all_different([X11,X12,X13,X14,X15,X16]),
+	all_different([X21,X22,X23,X24,X25,X26]),
+	all_different([X31,X32,X33,X34,X35,X36]),
+	all_different([X41,X42,X43,X44,X45,X46]),
+	all_different([X51,X52,X53,X54,X55,X56]),
+	all_different([X61,X62,X63,X64,X65,X66]),
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Check if the 6 columns are valid.
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	all_different([X11,X21,X31,X41,X51,X61]),
+	all_different([X12,X22,X32,X42,X52,X62]),
+	all_different([X13,X23,X33,X43,X53,X63]),
+	all_different([X14,X24,X34,X44,X54,X64]),
+	all_different([X15,X25,X35,X45,X55,X65]),
+	all_different([X16,X26,X36,X46,X56,X66]),
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Check if the 6 boxes are valid.
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	all_different([X11,X12,X13,X21,X22,X23]),
+	all_different([X14,X15,X16,X24,X25,X26]),
+	all_different([X31,X32,X33,X41,X42,X43]),
+	all_different([X34,X35,X36,X44,X45,X46]),
+	all_different([X51,X52,X53,X61,X62,X63]),
+	all_different([X54,X55,X56,X64,X65,X66]),
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Find a one-to-one mapping for the 36
+	% positions.
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	label([X11,X12,X13,X14,X15,X16]),
+	label([X21,X22,X23,X24,X25,X26]),
+	label([X31,X32,X33,X34,X35,X36]),
+	label([X41,X42,X43,X44,X45,X46]),
+	label([X51,X52,X53,X54,X55,X56]),
+	label([X61,X62,X63,X64,X65,X66]).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% print/1 prints a single solution.
+%
+% print_row/1 prints a single row.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+print_all([H|T],C):-
+	writeln(C),
+	nl,
+	print(H),
+	C1 is C+1,
+	print_all(T,C1).
+print_all([],_):-
+	nl.
+	
+print([H|T]):-
+	print_row(H),
+	nl,
+	print(T).
+print([]):-
+	nl.
+	
+print_row([H|T]):-
+	write(H),
+	write(' '),
+	print_row(T).
+print_row([]).

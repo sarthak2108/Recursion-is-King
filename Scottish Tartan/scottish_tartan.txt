@@ -1,0 +1,82 @@
+########################################
+########################################
+############ SCOTTISH TARTAN ###########
+########################################
+########################################
+########### XSB Version 3.6 ############
+########################################
+########################################
+
+A Scottish tartan is a pattern consisting of cross-crossed horizontal and vertical colors.
+- You have to implement a method that prints the tartan of the Young McProlog clan.
+Write a tartan/1 predicate that generates the tartan for any given size N on the screen by the goal ?-tartan(N). Here are the patterns for size 1, 2, 3, 4, 5, 6 and 7:
+
+?- tartan(1).
+
+*
+
+?- tartan(2).
+
+***
+ *
+***
+
+?- tartan(3).
+
+*   *
+*****
+* * *
+*****
+*   *
+
+?- tartan(4).
+
+*******
+ *   *
+ *****
+ * * *
+ *****
+ *   *
+*******
+
+?- tartan(5).
+
+*       *
+*********
+* *   * *
+* ***** *
+* * * * *
+* ***** *
+* *   * *
+*********
+*       *
+
+?- tartan(6).
+
+***********
+ *       *
+ *********
+ * *   * *
+ * ***** *
+ * * * * *
+ * ***** *
+ * *   * *
+ *********
+ *       *
+***********
+
+?- tartan(7).
+
+*           *
+*************
+* *       * *
+* ********* *
+* * *   * * *
+* * ***** * *
+* * * * * * *
+* * ***** * *
+* * *   * * *
+* ********* *
+* *       * *
+*************
+*           *

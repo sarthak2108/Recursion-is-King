@@ -1,0 +1,58 @@
+########################################
+########################################
+############ HUNGARIAN LACE ############
+########################################
+########################################
+########### XSB Version 3.6 ############
+########################################
+########################################
+
+Hungary is well-known for its Halas lace, a new lace-making technique developed at the turn of the 20th century in the farming town of Kiskunhalas a hundred miles south of Budapest. The lace comes in different sizes, consisting of concentric squares. We obtain the lace of size N+1 by circumscribing the lace of size N with a square that's rotated 45 degrees with respect to the previously added square. Here are the ASCII patterns of the laces for N = 1,..., 5 together with helpful line diagrams.
+
+?- lace(1).
+
+***
+* *
+***
+
+?- lace(2).
+
+  *
+ ***
+** **
+ ***
+  *
+
+?- lace(3).
+
+*****
+*****
+** **
+*****
+***** 
+
+?- lace(4).
+
+    *
+   * *
+  *****
+ *******
+* ** ** *
+ *******
+  *****
+   * *
+    *
+
+?- lace(5).
+
+*********
+*  * *  *
+* ***** *
+*********
+* ** ** *
+*********
+* ***** *
+*  * *  *
+*********
+
+Write a lace/1 predicate that draws the ASCII pattern of size N > 0 on the screen.

@@ -1,0 +1,29 @@
+########################################
+########################################
+####### EVALUATION OF STRUCTURES #######
+########################################
+########################################
+############ XSB Version 3.6 ###########
+########################################
+########################################
+
+Evaluation of structures:
+
+An arithmetic tree is like: minus(plus(6,8),mult(2,2))
+If you evaluate it, you get 10.
+The arithmetic tree you will get does not contain operators, i.e. the tree looks like  f1(f2(6,8),f3(2,2))
+and what you get is the shape of the tree (it's not always balanced as in the examples, but it is binary) and the values (integers) at the leaves. You also get a multiset of operators, and you are to place them in the tree so that you get the maximal value possible. So, for instance for the tree above, if you got {*,*,+}, the maximum would be 192. You get just enough operators for the given tree.
+Write a predicate maxval/3 with:
+- argument 1: given; the tree without operators, in the form tree(tree(6,8),tree(2,2))
+- argument 2: given; a list of operators, e.g. [mult, mult, plus]
+- argument 3: output; you compute it so that it is the maximal value attainable with the given tree and operators; use each given operator in exactly one position.
+
+The possible operators are plus, min, mult, with their usual interpretation. So,
+
+?- maxval(tree(tree(6,8),tree(2,2)), [mult, mult, plus], Max).
+
+Max = 192
+
+?- maxval(tree(tree(6,8),tree(2,2)), [mult, min, plus], Max).
+
+Max = 48

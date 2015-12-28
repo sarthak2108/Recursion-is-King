@@ -1,0 +1,186 @@
+:-import append/3, member/2 from basics.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% solve/2 accepts the input file from which
+% to read the clauses and an output
+% file to which to write the resolution
+% trace.
+%
+% readFile/3 reads the clauses and stores
+% them in a file. However, it changes the
+% clause to a list before storing and keeps
+% count of how many clauses are read. This
+% count is helpful for numbering the clauses
+% derived through resolution.
+%
+% permute/2 finds a permutation of
+% ordering of the clauses. This is a
+% necessary modification to proving a
+% goal by resolution refutation since
+% we require the trace itself and not
+% only a true/false response.
+%
+% resolve/6 finds the resolvent of two
+% clauses. If we have a list of clauses,
+% resolve/6 resolves the first and the
+% second and then their resolvent with
+% the third and so on. resolve/6
+% memorizes the resolution sequence
+% in a list and also keeps track of
+% what orderings of the clauses still
+% need to be explored. When all possible
+% orderings of the clauses have been
+% explored and still the empty clause
+% has not been derived, a failure occurs.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+solve(X, Y):-
+	see(X),
+	tell(Y),
+	readFile([], L, C),
+	findall(P, permute(L, P), [H|T]),
+	H = [H1|T1],
+	resolve(H1, T1, T, [], C, C).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% purgeNeg/4 removes complementary
+% literals from a clause.
+%
+% purgeDup/3 removes duplicate literals
+% from a clause.
+%
+% graph/3 converts the reolvent created
+% by purgeDup/3 into a graph representation
+% identical to that found in the input.
+%
+% writeFile/1 accepts the resolution
+% sequence and writes it to the file
+% specified as the second argument to
+% hw4/2 in the required format. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+resolve([X1, X2], [[Y1, Y2]|T1], [H|T], L, C1, C):-
+	X2 \= [],
+	Z1 is C1 + 1,
+	C2 is C1 + 1,
+	purgeNeg(X2, X2, Y2, Z2),
+	purgeDup(Z2, [], Z3),
+	(Z3 \= []
+	->
+		graph(Z3, Z4),
+		R =.. [resolution, X1, Y1, Z4, Z1]
+	;
+		R =.. [resolution, X1, Y1, empty, Z1]),
+	append(L, [R], L1),
+	resolve([Z1, Z3], T1, [H|T], L1, C2, C).
+resolve([_, X2], [], [H|T], _, _, C):-
+	X2 \= [],
+	H = [H1|T1],
+	resolve(H1, T1, T, [], C, C).
+resolve([_, X2], _, [], _, _, _):-
+	X2 \= [],
+	write('failure.'),
+	told.
+resolve([_, X2], _, _, L, _, _):-
+	X2 = [],
+	writeln('success.'),
+	writeFile(L).
+	
+purgeNeg([], L1, L2, L):-
+	append(L1, L2, L).
+purgeNeg([neg(H)|T], L1, L2, L):-
+	!,
+	(member(H, L2)
+	->
+		delete(L1, neg(H), L3),
+		delete(L2, H, L4), 
+		purgeNeg(T, L3, L4, L)
+	;
+		purgeNeg(T, L1, L2, L)).
+purgeNeg([H|T], L1, L2, L):-
+	member(neg(H), L2)
+	->
+		delete(L1, H, L3),
+		delete(L2, neg(H), L4),
+		purgeNeg(T, L3, L4, L)
+	;
+		purgeNeg(T, L1, L2, L).
+
+purgeDup([], L, L).		
+purgeDup([H|T], T1, L):-
+	\+ member(H, T1),
+	append(T1, [H], T2),
+	purgeDup(T, T2, L).
+purgeDup([H|T], T1, L):-
+	member(H, T1),
+	purgeDup(T, T1, L).
+
+graph([H1], H1).
+graph([H1, H2|T], G):-
+	G1 =.. [or, H1, H2],
+	(T = []
+	->
+		G = G1
+	;
+		graph(T, G2),
+		G =.. [or, G1, G2]).
+
+readFile(L1, L, C):-
+	read(X),
+	(X \= end_of_file
+	->
+		X =.. [X1, X2, X3],
+		(X1 = myQuery
+		->
+			(X3 = neg(A)
+			->
+				X4 = A
+			;
+				X4 = neg(X3))
+		;
+			X4 = X3),
+		preorder(X4, P),
+		H = [X2, P],
+		append(L1, [H], L2),
+		readFile(L2, L, C1),
+		C is C1 + 1
+	;
+		L = L1,
+		C is 0,
+		seen).
+
+writeFile([]):-
+	told.
+writeFile([H|T]):-
+	write(H),
+	writeln('.'),
+	writeFile(T).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Helper predicates.
+%
+% preorder/2 converts the input form
+% of the clauses to lists.
+%
+% delete/3 deletes an element from a
+% list and creates a new list.
+%
+% permute/2 fins a permutation of the
+% elements of a list.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+preorder(or(X,Y),L):-
+	!,
+	preorder(X,L1),
+	preorder(Y,L2),
+	append(L1,L2,L).
+preorder(X,[X]).
+
+delete([X|T],X,T).
+delete([H|T],X,[H|T1]):-
+	delete(T,X,T1).
+	
+permute([],[]).
+permute([H|T],L):-
+	permute(T,L1),
+	delete(L,H,L1).
